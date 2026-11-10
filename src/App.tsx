@@ -1,6 +1,12 @@
-import { useState } from "react";
+import { type ChangeEvent, type SubmitEvent, useState } from "react";
 import GlobalStyle from "./GlobalStyle.ts";
 import styled from "styled-components";
+
+type NewRecord = {
+    title: string;
+    type: string;
+    amount: number;
+}
 
 const Container = styled.div`
     width: 100%;
@@ -9,23 +15,190 @@ const Container = styled.div`
     color: #1f2937;
 `;
 
-function App() {
-    const [type, setType] = useState("expense");
-    const [title, setTitle] = useState("");
-    const [amount, setAmount] = useState("");
-    const [list, setList] = useState([]);
+const Title = styled.h2`
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 20px;
+`;
 
-    const handleChangeType = event => {
+const Fieldset = styled.fieldset`
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    padding: 16px;
+    background-color: white;
+`;
+
+const Legend = styled.legend`
+    padding: 0 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #4b5563;
+`;
+
+const Form = styled.form`
+    display: flex;
+    gap: 8px;
+`;
+
+const Select = styled.select`
+    height: 40px;
+    padding: 0 12px;
+    font-size: 15px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background-color: white;
+    &:focus,
+    &:hover {
+        outline: 2px solid #2563eb;
+        border-color: #2563eb;
+    }
+`;
+
+const Input = styled.input`
+    height: 40px;
+    padding: 0 12px;
+    font-size: 15px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background-color: white;
+    flex: 1;
+    min-width: 0;
+    &:focus,
+    &:hover {
+        outline: 2px solid #2563eb;
+        border-color: #2563eb;
+    }
+`;
+
+const Amount_input = styled.input`
+    height: 40px;
+    padding: 0 12px;
+    font-size: 15px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background-color: white;
+    flex: 1;
+    min-width: 0;
+    width: 120px;
+    &:focus,
+    &:hover {
+        outline: 2px solid #2563eb;
+        border-color: #2563eb;
+    }
+`;
+
+const Add_button = styled.button`
+    height: 40px;
+    padding: 0 20px;
+    font-size: 15px;
+    font-weight: 600;
+    color: white;
+    background-color: #2563eb;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    &:hover {
+        background-color: #1d4ed8;
+    }
+`;
+
+const Table = styled.table`
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+    background-color: white;
+    border: 1px solid #d1d5db;
+    
+    th,
+    td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    thead {
+        background-color: #f3f4f6;
+    }
+
+    th {
+        font-size: 14px;
+        font-weight: 600;
+        color: #4b5563;
+    }
+
+    tbody tr:hover {
+        background-color: #f9fafb;
+    }
+`;
+
+const Empty = styled.td`
+    text-align: center;
+    padding: 32px 12px;
+    color: #9ca3af;
+`;
+
+const Delete_button = styled.button`
+    padding: 6px 12px;
+    font-size: 13px;
+    color: #dc2626;
+    border: 1px solid #fca5a5;
+    border-radius: 6px;
+    cursor: pointer;
+
+    &:hover {
+    background-color: #fef2f2;
+}
+
+`;
+
+const Summary = styled.div`
+    margin-top: 20px;
+    padding: 16px;
+    border-radius: 10px;
+    background-color: #f3f4f6;
+`;
+
+const Summary_text = styled.h3`
+    font-size: 16px;
+    font-weight: 500;
+    color: #4b5563;
+`;
+
+const Balance = styled.h3`
+    margin-top: 8px;
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+`;
+
+const Income = styled.td`
+    color: #2563eb;
+    font-weight: 600;
+`;
+
+const Expense = styled.td`
+    color: #dc2626;
+    font-weight: 600;
+`;
+
+
+function App() {
+    const [type, setType] = useState<string>("expense");
+    const [title, setTitle] = useState<string>("");
+    const [amount, setAmount] = useState<string>("");
+    const [list, setList] = useState<NewRecord[]>([]);
+
+    const handleChangeType = (event:ChangeEvent<HTMLSelectElement>) => {
         setType(event.target.value);
     };
-    const handleChangeTitle = event => {
+    const handleChangeTitle = (event: ChangeEvent<HTMLInputElement>) => {
         setTitle(event.target.value);
     };
-    const handleChangeAmount = event => {
+    const handleChangeAmount = (event: ChangeEvent<HTMLInputElement>) => {
         setAmount(event.target.value);
     };
 
-    const handleSubmit = event => {
+    const handleSubmit = (event:SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
 
         const parseAmount = Number(amount);
@@ -35,7 +208,7 @@ function App() {
             return;
         }
 
-        const newRecord = {
+        const newRecord : NewRecord = {
             type: type,
             title: title,
             amount: parseAmount,
@@ -47,12 +220,12 @@ function App() {
         setType("expense");
     };
 
-    const handleDelete = index => {
+    const handleDelete = (index:number) => {
         const newList = list.filter((_, i) => i !== index);
         setList(newList);
     };
 
-    const totalIncome = list.reduce((sum, item) => {
+    const totalIncome = list.reduce((sum: number, item: NewRecord) => {
         return item.type === "income" ? sum + item.amount : sum;
     }, 0);
 
@@ -66,34 +239,30 @@ function App() {
         <>
             <GlobalStyle />
             <Container>
-                <h2 className={styles.title}>복잡 가계부</h2>
-                <fieldset className={styles.fieldSet}>
-                    <legend className={styles.legend}>내역 추가</legend>
-                    <form className={styles.form} onSubmit={handleSubmit}>
-                        <select className={styles.select} onChange={handleChangeType} value={type}>
+                <Title>복잡 가계부</Title>
+                <Fieldset>
+                    <Legend>내역 추가</Legend>
+                    <Form onSubmit={handleSubmit}>
+                        <Select onChange={handleChangeType} value={type}>
                             <option value={"expense"}>지출</option>
                             <option value={"income"}>수입</option>
-                        </select>
-                        <input
-                            className={styles.input}
+                        </Select>
+                        <Input
                             placeholder={"내용 (예: 점심, 월급)"}
                             onChange={handleChangeTitle}
                             value={title}
                         />
-                        <input
-                            className={styles.amountInput}
+                        <Amount_input
                             placeholder={"금액"}
                             type={"number"}
                             min={0}
                             onChange={handleChangeAmount}
                             value={amount}
                         />
-                        <button type={"submit"} className={styles.addButton}>
-                            추가
-                        </button>
-                    </form>
-                </fieldset>
-                <table className={styles.table}>
+                        <Add_button type={"submit"}>추가</Add_button>
+                    </Form>
+                </Fieldset>
+                <Table>
                     <thead>
                         <tr>
                             <th>구분</th>
@@ -105,9 +274,9 @@ function App() {
                     <tbody>
                         {list.length === 0 && (
                             <tr>
-                                <td colSpan={4} className={styles.empty}>
+                                <Empty colSpan={4}>
                                     주인장이 게을러서 먼지만 날리고 있습니다...
-                                </td>
+                                </Empty>
                             </tr>
                         )}
                         {list.map((item, index) => {
@@ -115,34 +284,31 @@ function App() {
                                 <tr key={index}>
                                     <td>{item.type === "income" ? "수입" : "지출"}</td>
                                     <td>{item.title}</td>
-                                    <td
-                                        className={
-                                            item.type === "income" ? styles.income : styles.expense
-                                        }>
-                                        {item.type === "income" ? "+" : "-"}
-                                        {item.amount.toLocaleString()}
-                                    </td>
+                                    {item.type === "income" ? (
+                                        <Income>+{item.amount.toLocaleString()}원</Income>
+                                    ) : (
+                                        <Expense>-{item.amount.toLocaleString()}원</Expense>
+                                    )}
                                     <td>
-                                        <button
-                                            className={styles.deleteButton}
+                                        <Delete_button
                                             onClick={() => {
                                                 handleDelete(index);
                                             }}>
                                             삭제
-                                        </button>
+                                        </Delete_button>
                                     </td>
                                 </tr>
                             );
                         })}
                     </tbody>
-                </table>
-                <div className={styles.summary}>
-                    <h3 className={styles.summaryText}>
+                </Table>
+                <Summary>
+                    <Summary_text>
                         수입 : {totalIncome.toLocaleString()}원 / 지출 :{" "}
                         {totalExpense.toLocaleString()}원
-                    </h3>
-                    <h3 className={styles.balance}>잔액 : {balance.toLocaleString()}원</h3>
-                </div>
+                    </Summary_text>
+                    <Balance>잔액 : {balance.toLocaleString()}원</Balance>
+                </Summary>
             </Container>
         </>
     );
